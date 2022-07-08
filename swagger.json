@@ -1,0 +1,205 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "## API 响应\n\n当请求参数错误时，状态码为 `400`，payload 为：\n\n```json\n{\n    \"err\": \"ERR_INVAL_ARGS\",\n    \"msg\": \"detailed error\"\n}\n```\n\n其余情况状态码均为 `200`。当请求发生错误时，返回：\n\n```json\n{\n    \"err\": \"ERR_XXX (见接口文档)\",\n    \"msg\": \"detailed error (or null)\"\n}\n```\n\n当请求成功时，返回：\n\n```json\n{\n    \"data\": {\n        // ...\n    }\n}\n```\n\n\n\u003c!-- BEGIN ERROR --\u003e\n\n## 错误码\n\n### Universal errors\n\n`ERR_INVAL_ARGS`: The request body is invalid\n\n### Account related errors\n\n`ERR_ACCOUNT_SEND_TOO_OFTEN`: Send activation email too many times\n\n`ERR_ACCOUNT_INVALID_EMAIL`: The email is invalid\n\n`ERR_ACCOUNT_REGISTERED`: The email is already registered\n\n`ERR_ACCOUNT_NOT_ACTIVATED`: The email is not activated\n\n`ERR_ACCOUNT_PASSWORD_WEAK`: The password is too weak\n\n`ERR_ACCOUNT_USERNAME_EXISTS`: The username has already registered\n\n\u003c!-- END ERROR --\u003e",
+        "title": "YARD API v1",
+        "contact": {},
+        "version": "1.0"
+    },
+    "basePath": "/api/v1",
+    "paths": {
+        "/account/activate": {
+            "post": {
+                "description": "`ERR_ACCOUNT_INVALID_EMAIL` | `ERR_ACCOUNT_REGISTERED` | `ERR_ACCOUNT_SEND_TOO_OFTEN`",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "Send activation email",
+                "parameters": [
+                    {
+                        "description": "Activation request",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/account.EmailActivationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request arguments",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/account/register": {
+            "post": {
+                "description": "`ERR_ACCOUNT_NOT_ACTIVATED` | `ERR_ACCOUNT_REGISTERED` | `ERR_ACCOUNT_PASSWORD_WEAK` | `ERR_ACCOUNT_USERNAME_EXISTS`",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "account"
+                ],
+                "summary": "Register a new user",
+                "parameters": [
+                    {
+                        "description": "Register request",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/account.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/account.RegisterResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request arguments",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "account.EmailActivationRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "account.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "email",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "code": {
+                    "description": "Activation code.",
+                    "type": "string"
+                },
+                "email": {
+                    "description": "User's email.",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "User's original password.",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "User's username, must be unique.",
+                    "type": "string"
+                }
+            }
+        },
+        "account.RegisterResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "description": "Access token.",
+                    "type": "string"
+                }
+            }
+        },
+        "response.Response": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "description": "Response data (if succeed)."
+                },
+                "err": {
+                    "description": "Error code (if fail).",
+                    "type": "string"
+                },
+                "msg": {
+                    "description": "Error description (fail \u0026 optional).",
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
